@@ -662,18 +662,21 @@ class DraftModuleStore(MongoModuleStore):
                         index_item_location(child_loc, current_start_date)
 
                 item_index = {}
-                item_index.update(location_info)
-                item_index.update(item.index_view())
-                item_index.update({
-                    'id': unicode(item.scope_ids.usage_id),
-                })
-
-                if current_start_date:
+                try:
+                    item_index.update(location_info)
+                    item_index.update(item.index_view())
                     item_index.update({
-                        "start_date": current_start_date
+                        'id': unicode(item.scope_ids.usage_id),
                     })
 
-                searcher.index(DOCUMENT_TYPE, item_index)
+                    if current_start_date:
+                        item_index.update({
+                            "start_date": current_start_date
+                        })
+
+                    searcher.index(DOCUMENT_TYPE, item_index)
+                except:
+                    log.warning('Could not index item: %s', item_location)
 
         def remove_index_item_location(item_location):
             """ remove this item from the search index """
@@ -691,6 +694,13 @@ class DraftModuleStore(MongoModuleStore):
             remove_index_item_location(location)
         else:
             index_item_location(location, None)
+
+    def do_course_reindex(self, course_key, depth=0, **kwargs):
+        """
+        Get the course with the given courseid (org/course/run)
+        """
+        location = course_key.make_usage_key('course', course_key.run)
+        self.do_index(location, delete=False)
 
     def publish(self, location, user_id, **kwargs):
         """

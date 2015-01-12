@@ -874,6 +874,60 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
         except ItemNotFoundError:
             return None
 
+    def do_index(self, location, delete=False, **kwargs):
+        # TODO - inline for now, need to move this out to a celery task
+        INDEX_NAME = "courseware_index"
+        DOCUMENT_TYPE = "courseware_content"
+
+        searcher = SearchEngine.get_search_engine(INDEX_NAME)
+        location_info = {
+            "course": unicode(location.course_key),
+        }
+
+        def _fetch_item(item_location):
+            try:
+                item = self.get_item(item_location, revision=ModuleStoreEnum.RevisionOption.published_only)
+            except:
+                log.warning('Cannot find: %s', item_location)
+                return None
+
+            return item
+
+        def index_item_location(item_location):
+            item = _fetch_item(item_location)
+            if item:
+                if item.has_children:
+                    for child_loc in item.children:
+                        index_item_location(child_loc)
+
+                item_index = {}
+                item_index.update(location_info)
+                item_index.update(item.index_view())
+                item_index.update({
+                    'id': unicode(item.scope_ids.usage_id),
+                })
+                searcher.index(DOCUMENT_TYPE, item_index)
+
+        def remove_index_item_location(item_location):
+            item = _fetch_item(item_location)
+            if item:
+                if item.has_children:
+                    for child_loc in item.children:
+                        remove_index_item_location(child_loc)
+                searcher.remove(DOCUMENT_TYPE, unicode(item.scope_ids.usage_id))
+
+        if delete:
+            remove_index_item_location(location)
+        else:
+            index_item_location(location)
+
+    def do_course_reindex(self, course_key, depth=0, **kwargs):
+        """
+        Get the course with the given courseid (org/course/run)
+        """
+        location = course_key.make_usage_key('course', course_key.run)
+        self.do_index(location, delete=False)
+
     def has_course(self, course_key, ignore_case=False, **kwargs):
         """
         Returns the course_id of the course if it was found, else None
@@ -1271,6 +1325,53 @@ class MongoModuleStore(ModuleStoreDraftAndPublished, ModuleStoreWriteBase, Mongo
                 raise ItemNotFoundError(xblock.location.course_key)
 
         return xblock
+
+    def do_index(self, location, delete=False):
+        # TODO - inline for now, need to move this out to a celery task
+        INDEX_NAME = "courseware_index"
+        DOCUMENT_TYPE = "courseware_content"
+
+        searcher = SearchEngine.get_search_engine(INDEX_NAME)
+        location_info = {
+            "course": unicode(location.course_key),
+        }
+
+        def _fetch_item(item_location):
+            try:
+                item = self.get_item(item_location, revision=ModuleStoreEnum.RevisionOption.published_only)
+            except:
+                log.warning('Cannot find: %s', item_location)
+                return None
+
+            return item
+
+        def index_item_location(item_location):
+            item = _fetch_item(item_location)
+            if item:
+                if item.has_children:
+                    for child_loc in item.children:
+                        index_item_location(child_loc)
+
+                item_index = {}
+                item_index.update(location_info)
+                item_index.update(item.index_view())
+                item_index.update({
+                    'id': unicode(item.scope_ids.usage_id),
+                })
+                searcher.index(DOCUMENT_TYPE, item_index)
+
+        def remove_index_item_location(item_location):
+            item = _fetch_item(item_location)
+            if item:
+                if item.has_children:
+                    for child_loc in item.children:
+                        remove_index_item_location(child_loc)
+                searcher.remove(DOCUMENT_TYPE, unicode(item.scope_ids.usage_id))
+
+        if delete:
+            remove_index_item_location(location)
+        else:
+            index_item_location(location)
 
     def _serialize_scope(self, xblock, scope):
         """

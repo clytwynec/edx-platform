@@ -80,8 +80,10 @@ div.video {
       vertical-align: top;
 
       .host-tag {
+        @include margin-right($baseline/2);
+        position: absolute;
+        left: -9999em;
         display: inline-block;
-        margin-right: ($baseline/2);
         vertical-align: middle;
         font-size: 70%;
         color: #777;

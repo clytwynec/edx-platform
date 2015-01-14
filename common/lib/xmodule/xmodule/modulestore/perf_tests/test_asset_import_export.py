@@ -163,25 +163,18 @@ class FindAssetTest(unittest.TestCase):
     @ddt.data(*itertools.product(
         MODULESTORE_SETUPS,
         ASSET_AMOUNT_PER_TEST,
-        ( ('displayname', ModuleStoreEnum.SortOrder.ascending),
-          ('displayname', ModuleStoreEnum.SortOrder.descending),
-          ('uploadDate', ModuleStoreEnum.SortOrder.ascending),
-          ('uploadDate', ModuleStoreEnum.SortOrder.descending),
-        ),
     ))
     @ddt.unpack
-    def test_generate_find_timings(self, source_ms, num_assets, sort):
+    def test_generate_find_timings(self, source_ms, num_assets):
         """
         Generate timings for different amounts of asset metadata and different modulestores.
         """
         if CodeBlockTimer is None:
             raise SkipTest("CodeBlockTimer undefined.")
 
-        desc = "FindAssetTest:{}:{}:{}-{}".format(
+        desc = "FindAssetTest:{}:{}".format(
             SHORT_NAME_MAP[source_ms],
             num_assets,
-            sort[0],
-            'asc' if sort[1] == ModuleStoreEnum.SortOrder.ascending else 'desc'
         )
 
         with CodeBlockTimer(desc):
@@ -215,14 +208,24 @@ class FindAssetTest(unittest.TestCase):
                         # has created its own test modulestore, the AssetManager can't be used.
                         asset = source_store.find_asset_metadata(asset_key)
 
-                    with CodeBlockTimer("get_asset_list"):
-                        # Grab two ranges of 50 assets using different sorts.
-                        # Why 50? That's how many are displayed on the current Studio "Files & Uploads" page.
-                        start_middle = num_assets / 2
-                        asset_page = source_store.get_all_asset_metadata(
-                            source_course_key, 'asset', start=0, sort=sort, maxresults=50
-                        )
-                        asset_page = source_store.get_all_asset_metadata(
-                            source_course_key, 'asset', start=start_middle, sort=sort, maxresults=50
-                        )
+                    # Perform get_all_asset_metadata for each sort.
+                    for sort in (
+                        ('displayname', ModuleStoreEnum.SortOrder.ascending),
+                        ('displayname', ModuleStoreEnum.SortOrder.descending),
+                        ('uploadDate', ModuleStoreEnum.SortOrder.ascending),
+                        ('uploadDate', ModuleStoreEnum.SortOrder.descending),
+                    ):
+                        with CodeBlockTimer("get_asset_list:{}-{}".format(
+                                sort[0],
+                                'asc' if sort[1] == ModuleStoreEnum.SortOrder.ascending else 'desc'
+                            )):
+                            # Grab two ranges of 50 assets using different sorts.
+                            # Why 50? That's how many are displayed on the current Studio "Files & Uploads" page.
+                            start_middle = num_assets / 2
+                            asset_page = source_store.get_all_asset_metadata(
+                                source_course_key, 'asset', start=0, sort=sort, maxresults=50
+                            )
+                            asset_page = source_store.get_all_asset_metadata(
+                                source_course_key, 'asset', start=start_middle, sort=sort, maxresults=50
+                            )
 

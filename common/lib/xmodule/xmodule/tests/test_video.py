@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 # pylint: disable=protected-access
 """Test for Video Xmodule functional logic.
@@ -15,8 +16,6 @@ the course, section, subsection, unit, etc.
 import unittest
 import datetime
 from uuid import uuid4
-import copy
-import os
 from mock import Mock, patch
 
 from . import LogicTest
@@ -53,10 +52,8 @@ Dobar dan!
 Kako ste danas?
 '''
 
-def seed():
-    return os.getppid()
 
-settings.YOUTUBE = {
+TEST_YOU_TUBE_SETTINGS = {
     # YouTube JavaScript API
     'API': 'www.youtube.com/iframe_api',
 
@@ -74,11 +71,11 @@ settings.YOUTUBE = {
     },
 }
 
-settings.CONTENTSTORE = {
+TEST_DATA_CONTENTSTORE = {
     'ENGINE': 'xmodule.contentstore.mongo.MongoContentStore',
     'DOC_STORE_CONFIG': {
         'host': 'localhost',
-        'db': 'acceptance_xcontent_%s' % seed(),
+        'db': 'test_xcontent_%s' % uuid4().hex,
     },
     # allow for additional options that can be keyed on a name, e.g. 'trashcan'
     'ADDITIONAL_OPTIONS': {
@@ -88,8 +85,6 @@ settings.CONTENTSTORE = {
     }
 }
 
-TEST_DATA_CONTENTSTORE = copy.deepcopy(settings.CONTENTSTORE)
-TEST_DATA_CONTENTSTORE['DOC_STORE_CONFIG']['db'] = 'test_xcontent_%s' % uuid4().hex
 
 def instantiate_descriptor(**field_data):
     """
@@ -661,6 +656,7 @@ class VideoCdnTest(unittest.TestCase):
 
 
 @override_settings(CONTENTSTORE=TEST_DATA_CONTENTSTORE)
+@override_settings(YOUTUBE=TEST_YOU_TUBE_SETTINGS)
 class VideoDescriptorIndexingTestCase(unittest.TestCase):
 
     """

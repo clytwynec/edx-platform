@@ -128,7 +128,7 @@ END
     "unit")
         case "$SHARD" in
             "lms"|"cms")
-                paver test_system -s $SHARD
+                paver test_system -s $SHARD --artifacts-dir=$BUILD_NAME
                 ;;
             "js")
                 paver test_js

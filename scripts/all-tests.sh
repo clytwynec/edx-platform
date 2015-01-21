@@ -126,7 +126,22 @@ END
         ;;
 
     "unit")
-        paver test
+        case "$SHARD" in
+            "lms"|"cms")
+                paver test_system -s $SHARD
+                ;;
+            "js")
+                paver test_js
+                ;;
+            "lib")
+                paver test_lib
+                ;;
+            *)
+                paver test
+                ;;
+
+        esac
+
         paver coverage
         ;;
 

@@ -20,7 +20,12 @@ class NoseTestSuite(TestSuite):
         self.failed_only = kwargs.get('failed_only', False)
         self.fail_fast = kwargs.get('fail_fast', False)
         self.run_under_coverage = kwargs.get('with_coverage', True)
-        self.report_dir = Env.REPORT_DIR / self.root
+
+        if kwargs.get('artifacts_dir'):
+            self.report_dir = Env.REPORT_DIR / kwargs.get('artifacts_dir')
+        else:
+            self.report_dir = Env.REPORT_DIR / self.root
+
         self.test_id_dir = Env.TEST_DIR / self.root
         self.test_ids = self.test_id_dir / 'noseids'
 

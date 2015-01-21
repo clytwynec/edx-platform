@@ -27,6 +27,7 @@ __test__ = False  # do not collect
     ("failed", "f", "Run only failed tests"),
     ("fail_fast", "x", "Run only failed tests"),
     ("fasttest", "a", "Run without collectstatic"),
+    ("artifacts_dir=", "d", "Alternative directory name for test artifacts."),
     make_option("--verbose", action="store_const", const=2, dest="verbosity"),
     make_option("-q", "--quiet", action="store_const", const=0, dest="verbosity"),
     make_option("-v", "--verbosity", action="count", dest="verbosity", default=1),
@@ -43,6 +44,7 @@ def test_system(options):
         'fail_fast': getattr(options, 'fail_fast', None),
         'fasttest': getattr(options, 'fasttest', None),
         'verbosity': getattr(options, 'verbosity', 1),
+        'artifacts_dir': getattr(options, 'artifacts_dir', None),
     }
 
     if test_id:

@@ -127,9 +127,6 @@ END
 
     "unit")
         case "$SHARD" in
-            "lms"|"cms")
-                paver test_system -s $SHARD --artifacts-dir=$BUILD_NAME
-                ;;
             "js")
                 paver test_js
                 ;;
@@ -137,7 +134,7 @@ END
                 paver test_lib
                 ;;
             *)
-                paver test
+                paver test_system -s $SHARD --artifacts-dir=$BUILD_NUMBER
                 ;;
 
         esac

@@ -134,7 +134,7 @@ END
                 paver test_lib
                 ;;
             *)
-                paver test_system -s "${SHARD}" --artifacts_dir=$BUILD_NUMBER
+                paver test_system -s $SHARD -t ${TEST_SUBSET}  --artifacts_dir=$BUILD_NUMBER
                 ;;
 
         esac

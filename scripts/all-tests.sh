@@ -127,19 +127,28 @@ END
 
     "unit")
         case "$SHARD" in
-            "js")
-                paver test_js
-                ;;
-            "lib")
+            "common-lib")
                 paver test_lib
                 ;;
-            *)
-                paver test_system -s $SHARD -t "${TEST_SUBSET}"  --artifacts_dir=$BUILD_NUMBER
+            "lms-1")
+                paver test_system -s lms -t "lms/djangoapps/*"
                 ;;
-
+            "lms-2")
+                paver test_system -s lms -t "common/djangoapps/* openedx/core/djangoapps/* lms/lib/* lms/tests.py"
+                ;;
+            "cms-1")
+                paver test_system -s cms -t "cms/djangoapps/* cms/lib/*"
+                ;;
+            "cms-2")
+                paver test_system -s cms -t "common/djangoapps/* openedx/core/djangoapps/*"
+                ;;
         esac
 
         paver coverage
+        ;;
+
+    "js")
+        paver test_js
         ;;
 
     "lms-acceptance")

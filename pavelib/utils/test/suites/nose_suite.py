@@ -57,7 +57,7 @@ class NoseTestSuite(TestSuite):
                 cmd0 = "`which {}`".format(cmd0)
 
             cmd = (
-                "python -m coverage run --rcfile={root}/.coveragerc "
+                "python -m coverage run -p --rcfile={root}/.coveragerc "
                 "{cmd0} {cmd_rest}".format(
                     root=self.root,
                     cmd0=cmd0,
@@ -111,7 +111,7 @@ class SystemTestSuite(NoseTestSuite):
     def cmd(self):
         cmd = (
             './manage.py {system} test --verbosity={verbosity} '
-            '{test_id} {test_opts} --traceback --settings=test'.format(
+            '{test_id} {test_opts} --traceback --settings=test --with-profile'.format(
                 system=self.root,
                 verbosity=self.verbosity,
                 test_id=self.test_id,

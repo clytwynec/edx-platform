@@ -1,0 +1,4 @@
+[paths]
+source =
+    /home/jenkins/workspace/test-edx-platform-report
+    /home/jenkins/workspace/edx-platform-test-suite
